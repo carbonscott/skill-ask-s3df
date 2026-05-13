@@ -1,0 +1,5 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+UV="${SCRIPT_DIR}/uv"
+[[ -x "$UV" ]] || UV="uv"
+exec "$UV" run --script "$SCRIPT_DIR/docs-index.py" "$@"

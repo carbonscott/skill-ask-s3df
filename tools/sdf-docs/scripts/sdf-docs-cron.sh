@@ -9,6 +9,7 @@
 #   ./sdf-docs-cron.sh run                 Run sync now
 
 set -euo pipefail
+umask 027
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
