@@ -29,6 +29,15 @@ export SDF_DOCS_ROOT="$DATA_DIR"
 export PATH="$SKILL_DIR/bin:\$PATH"
 EOF
 
+# Keep the facility's shared uv on PATH. Without this line the regenerated
+# env.local leaves docs-index dependent on whatever uv the caller has, which
+# is nothing on a Slurm node or for a user without a personal install.
+if [ -d /sdf ]; then
+    echo 'export PATH="/sdf/group/lcls/ds/dm/apps/dev/bin:$PATH"' >> "$SKILL_DIR/env.local"
+elif [ -d /lustre/orion ]; then
+    echo 'export PATH="/ccs/home/cwang31/.local/bin:$PATH"' >> "$SKILL_DIR/env.local"
+fi
+
 echo ""
 echo "Done. Skill is ready to use."
 echo "env.local created at: $SKILL_DIR/env.local"

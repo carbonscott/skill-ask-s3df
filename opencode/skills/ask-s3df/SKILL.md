@@ -75,5 +75,5 @@ If `SDF_DOCS_ROOT` is still empty after sourcing, offer to run `./setup.sh` in t
 ## Important notes
 
 - The docs are from the official `slaclab/sdf-docs` repository (branch: `prod`)
-- To update the index after a `git pull`: `docs-index index "$SDF_DOCS_ROOT" --incremental --ext md`
+- To update the index after a `git pull`: `source /path/to/this/skill/env.sh && docs-index index "$SDF_DOCS_ROOT" --incremental --ext md`
 - For Slurm-specific questions with more depth, consider also using `@ask-slurm-s3df`

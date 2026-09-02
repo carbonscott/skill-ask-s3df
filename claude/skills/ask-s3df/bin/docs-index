@@ -1,5 +1,39 @@
 #!/bin/bash
+# Launch docs-index.py through the SHARED uv, never a personal ~/.local/bin/uv.
+#
+# Resolution order:
+#   1. $SCRIPT_DIR/uv     - a uv sitting beside this wrapper (the dev/bin layout).
+#   2. $DOCS_INDEX_BIN/uv - the facility's shared bin, site-detected below
+#                           (S3DF -> /sdf/group/lcls/ds/dm/apps/dev/bin,
+#                            OLCF  -> /ccs/home/cwang31/.local/bin).
+#   3. uv on PATH         - last resort, and the only case off-site.
+# Probing 1 and 2 before PATH is deliberate: the shared uv must win even when a
+# personal ~/.local/bin/uv is first on PATH. Set DOCS_INDEX_BIN to override.
+set -u
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-UV="${SCRIPT_DIR}/uv"
-[[ -x "$UV" ]] || UV="uv"
+
+if [ -z "${DOCS_INDEX_BIN:-}" ]; then
+    if [ -d /sdf ]; then
+        DOCS_INDEX_BIN=/sdf/group/lcls/ds/dm/apps/dev/bin
+    elif [ -d /lustre/orion ]; then
+        DOCS_INDEX_BIN=/ccs/home/cwang31/.local/bin
+    else
+        DOCS_INDEX_BIN=""
+    fi
+fi
+
+UV=""
+for candidate in "$SCRIPT_DIR/uv" "${DOCS_INDEX_BIN:-}/uv"; do
+    if [ -x "$candidate" ]; then UV="$candidate"; break; fi
+done
+[ -n "$UV" ] || UV="$(command -v uv || true)"
+
+if [ -z "$UV" ]; then
+    echo "docs-index: no uv found." >&2
+    echo "  Expected the shared uv beside this script or at \$DOCS_INDEX_BIN/uv" >&2
+    echo "  (S3DF: /sdf/group/lcls/ds/dm/apps/dev/bin/uv)." >&2
+    echo "  Set DOCS_INDEX_BIN to the directory holding uv." >&2
+    exit 127
+fi
+
 exec "$UV" run --script "$SCRIPT_DIR/docs-index.py" "$@"
