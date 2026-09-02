@@ -24,19 +24,20 @@ git clone --branch prod https://github.com/slaclab/sdf-docs.git "$DATA_DIR"
 echo "Building search index..."
 "$SKILL_DIR/bin/docs-index" index "$DATA_DIR" --incremental --ext md
 
-cat > "$SKILL_DIR/env.local" <<EOF
-export SDF_DOCS_ROOT="$DATA_DIR"
-export PATH="$SKILL_DIR/bin:\$PATH"
-EOF
-
-# Keep the facility's shared uv on PATH. Without this line the regenerated
-# env.local leaves docs-index dependent on whatever uv the caller has, which
-# is nothing on a Slurm node or for a user without a personal install.
+# Keep the facility's shared uv reachable. Written FIRST, so the skill's own
+# bin line below still prepends last and bin/docs-index keeps the precedence
+# it had before this block existed; the shared bin sits behind it, supplying uv.
+: > "$SKILL_DIR/env.local"
 if [ -d /sdf ]; then
     echo 'export PATH="/sdf/group/lcls/ds/dm/apps/dev/bin:$PATH"' >> "$SKILL_DIR/env.local"
 elif [ -d /lustre/orion ]; then
     echo 'export PATH="/ccs/home/cwang31/.local/bin:$PATH"' >> "$SKILL_DIR/env.local"
 fi
+
+cat >> "$SKILL_DIR/env.local" <<EOF
+export SDF_DOCS_ROOT="$DATA_DIR"
+export PATH="$SKILL_DIR/bin:\$PATH"
+EOF
 
 echo ""
 echo "Done. Skill is ready to use."
